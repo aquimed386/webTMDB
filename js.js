@@ -1,4 +1,5 @@
 
+/* const LANGUAGE ={ "en" : "Inglés", "es" : "Español", "fr" : "Francés" }; */
 const API_KEY = `b4e59077eed37925947989634404ea03`
 const image_path = `https://image.tmdb.org/t/p/w500`
 const genero = `https://api.themoviedb.org/3/genre/movie/list?api_key=b4e59077eed37925947989634404ea03&language=en-US`
@@ -8,25 +9,38 @@ const main_grid = document.querySelector('.favorites .movies-grid')
 
 get_trending_movies()
 async function get_trending_movies () {
-    const resp = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}`)
+    const resp = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}&language=es-EN`)
     const respData = await resp.json()
+    console.log(respData.results);
     return respData.results
+}
+
+get_genero()
+async function get_genero () {
+    const resp = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}&language=es-EN`)
+    const respData = await resp.json()
+    console.log(respData.genres);
+    return respData.genres
 }
 
 add_to_dom_trending()
 async function add_to_dom_trending () {
 
     const data = await get_trending_movies()
-    console.log(data);
+    const generos = await get_genero()
 
     trending_el.innerHTML = data.slice(0, 5).map(e => {
+        const genero = generos.find(g => g.id === e.genre_ids[0]).name
+        console.log(e);
         return `
             <div class="card" data-id="${e.id}">
                 <div class="img">
                     <img src="${image_path + e.poster_path}">
                 </div>
                 <div class="info">
-                    <h2>${e.title}</h2>
+                    <button class="add-fav" data-id_movie="${e.id}">Añadir a favoritos</button>
+
+                    <h2>${e.title ? e.title : e.name}</h2>
 
                     <div class="single-info">
                         <span>Sinopsis: </span>
@@ -34,7 +48,7 @@ async function add_to_dom_trending () {
                     </div>
                     <div class="single-info">
                         <span>Géneros: </span>
-                        <span>${e.genero}</span>
+                        <span>${genero}</span>
                     </div>
 
                     <div class="single-info">
@@ -44,7 +58,7 @@ async function add_to_dom_trending () {
 
                     <div class="single-info">
                     <span>Fecha de estreno: </span>
-                    <span>${e.release_date}</span>
+                    <span>${e.release_date ? e.release_date : 'Por determinar'}</span>
                 </div>
 
                     <div class="single-info">
@@ -56,15 +70,39 @@ async function add_to_dom_trending () {
         `
     }).join('')
 
+
     //LocalStorage
 function get_LS () {
     const movie_ids = JSON.parse(localStorage.getItem('movie-id'))
     return movie_ids === null ? [] : movie_ids
 }
-function add_to_LS (id) {
+
+// Obtener todos los botones con la clase "add-fav"
+const botones = document.querySelectorAll('.add-fav');
+
+// Añadir un event listener a cada botón
+botones.forEach(boton => {
+  boton.addEventListener('click', () => {
+    // Obtener el valor de "data-id_movie" del botón actual
+    const idMovie = boton.getAttribute('data-id_movie');
+    modify_fav_LS(idMovie);
+  });
+});
+
+function modify_fav_LS (id) {
     const movie_ids = get_LS()
+    for(let i = 0; i <= movie_ids.length; i++) {
+        /* si movie_ids[i] == id borrar en el local storage el elemento */
+        if (movie_ids[i] == id) {
+            remove_LS(id)
+            return
+        }
+        /* if (movie_ids[i] == id) return */
+    }
     localStorage.setItem('movie-id', JSON.stringify([...movie_ids, id]))
 }
+
+
 function remove_LS (id) {
     const movie_ids = get_LS()
     localStorage.setItem('movie-id', JSON.stringify(movie_ids.filter(e => e !== id)))
@@ -90,6 +128,12 @@ function remove_LS (id) {
         }
         fetch_favorite_movies()
     })
+}
+
+async function get_movie_by_id (id) {
+    const resp = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`)
+    const respData = await resp.json()
+    return respData
 }
 
 // Favorite Movies
