@@ -1,5 +1,5 @@
 
-/* const LANGUAGE ={ "en" : "Inglés", "es" : "Español", "fr" : "Francés" }; */
+const LANGUAGE ={ "en" : "Inglés", "es" : "Español", "fr" : "Francés" };
 const API_KEY = `b4e59077eed37925947989634404ea03`
 const image_path = `https://image.tmdb.org/t/p/w500`
 const genero = `https://api.themoviedb.org/3/genre/movie/list?api_key=b4e59077eed37925947989634404ea03&language=en-US`
@@ -53,7 +53,7 @@ async function add_to_dom_trending () {
 
                     <div class="single-info">
                         <span>Lenguaje original: </span>
-                        <span>${e.original_language}</span>
+                        <span>${LANGUAGE[e.original_language]}</span>
                     </div>
 
                     <div class="single-info">
