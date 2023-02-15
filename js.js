@@ -11,7 +11,6 @@ get_trending_movies()
 async function get_trending_movies() {
     const resp = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}&language=es-EN`)
     const respData = await resp.json()
-    console.log(respData.results);
     return respData.results
 }
 
@@ -19,8 +18,13 @@ get_genero()
 async function get_genero() {
     const resp = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}&language=es-EN`)
     const respData = await resp.json()
-    console.log(respData.genres);
     return respData.genres
+}
+
+async function get_movie_by_id(id) {
+    const resp = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`)
+    const respData = await resp.json()
+    return respData
 }
 
 add_to_dom_trending()
@@ -73,10 +77,10 @@ async function add_to_dom_trending() {
     }).join('')
 
 
-    //LocalStorage
+    /* Obten los datos del local storage */
     function get_LS() {
-        const movie_ids = JSON.parse(localStorage.getItem('movie-id'))
-        return movie_ids === null ? [] : movie_ids
+        const movie_ids = JSON.parse(localStorage.getItem('movie')) || []
+        return movie_ids
     }
 
     // Obtener todos los botones con la clase "add-fav"
@@ -100,19 +104,10 @@ async function add_to_dom_trending() {
         });
     });
 
-    function modify_fav_LS(id) {
-        const movie_ids = get_LS()
-        for (let i = 0; i <= movie_ids.length; i++) {
-            /* si movie_ids[i] == id borrar en el local storage el elemento */
-            if (movie_ids[i] == id) {
-                remove_LS(id)
-                return
-            }
-            /* if (movie_ids[i] == id) return */
-        }
-        let movie = get_movie_by_id(id)
-        localStorage.setItem('movie-' + id, JSON.stringify(movie))
-    }
+    /* Consigue todos los datos de la película pasando el idMovie con la función "get_movie_by_id(id)" y almacénala dentro de un array en el nombre movies */
+
+
+    // ----------------- AQUÍ VA LA FUNCIÓN DEL TEMPSCRIPT.JS ----------------- //
 
 
     function remove_LS(id) {
@@ -123,7 +118,7 @@ async function add_to_dom_trending() {
 
     //El lío de los favoritos
 
-    const heart_icon = corazon.querySelector('.heart-icon')
+    /* const heart_icon = corazon.querySelector('.heart-icon') */
 
     const movie_ids = get_LS()
     for (let i = 0; i <= movie_ids.length; i++) {
@@ -142,11 +137,7 @@ async function add_to_dom_trending() {
     })
 }
 
-async function get_movie_by_id(id) {
-    const resp = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`)
-    const respData = await resp.json()
-    return respData
-}
+
 
 // Favorite Movies
 fetch_favorite_movies()
