@@ -1,5 +1,5 @@
 
-const LANGUAGE ={ "en" : "Inglés", "es" : "Español", "fr" : "Francés" };
+const LANGUAGE = { "en": "Inglés", "es": "Español", "fr": "Francés" };
 const API_KEY = `b4e59077eed37925947989634404ea03`
 const image_path = `https://image.tmdb.org/t/p/w500`
 const genero = `https://api.themoviedb.org/3/genre/movie/list?api_key=b4e59077eed37925947989634404ea03&language=en-US`
@@ -8,7 +8,7 @@ const trending_el = document.querySelector('.trending .movies-grid')
 const main_grid = document.querySelector('.favorites .movies-grid')
 
 get_trending_movies()
-async function get_trending_movies () {
+async function get_trending_movies() {
     const resp = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}&language=es-EN`)
     const respData = await resp.json()
     console.log(respData.results);
@@ -16,7 +16,7 @@ async function get_trending_movies () {
 }
 
 get_genero()
-async function get_genero () {
+async function get_genero() {
     const resp = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}&language=es-EN`)
     const respData = await resp.json()
     console.log(respData.genres);
@@ -24,7 +24,7 @@ async function get_genero () {
 }
 
 add_to_dom_trending()
-async function add_to_dom_trending () {
+async function add_to_dom_trending() {
 
     const data = await get_trending_movies()
     const generos = await get_genero()
@@ -38,7 +38,9 @@ async function add_to_dom_trending () {
                     <img src="${image_path + e.poster_path}">
                 </div>
                 <div class="info">
-                    <button class="add-fav" data-id_movie="${e.id}">Añadir a favoritos</button>
+                    
+                    <a class="add-fav" data-id_movie="${e.id}" style="float: left;"><img src="icons/heart.svg" alt=""></a>
+                    
 
                     <h2>${e.title ? e.title : e.name}</h2>
 
@@ -72,41 +74,51 @@ async function add_to_dom_trending () {
 
 
     //LocalStorage
-function get_LS () {
-    const movie_ids = JSON.parse(localStorage.getItem('movie-id'))
-    return movie_ids === null ? [] : movie_ids
-}
-
-// Obtener todos los botones con la clase "add-fav"
-const botones = document.querySelectorAll('.add-fav');
-
-// Añadir un event listener a cada botón
-botones.forEach(boton => {
-  boton.addEventListener('click', () => {
-    // Obtener el valor de "data-id_movie" del botón actual
-    const idMovie = boton.getAttribute('data-id_movie');
-    modify_fav_LS(idMovie);
-  });
-});
-
-function modify_fav_LS (id) {
-    const movie_ids = get_LS()
-    for(let i = 0; i <= movie_ids.length; i++) {
-        /* si movie_ids[i] == id borrar en el local storage el elemento */
-        if (movie_ids[i] == id) {
-            remove_LS(id)
-            return
-        }
-        /* if (movie_ids[i] == id) return */
+    function get_LS() {
+        const movie_ids = JSON.parse(localStorage.getItem('movie-id'))
+        return movie_ids === null ? [] : movie_ids
     }
-    localStorage.setItem('movie-id', JSON.stringify([...movie_ids, id]))
-}
+
+    // Obtener todos los botones con la clase "add-fav"
+    const botones = document.querySelectorAll('.add-fav');
+
+    // Añadir un event listener a cada botón
+    botones.forEach(boton => {
+        boton.addEventListener('click', () => {
+            // Obtener el valor de "data-id_movie" del botón actual
+            const idMovie = boton.getAttribute('data-id_movie');
+            /* Comprobar si el path de la imágen es /icons/heart-fill.svg */
+            if (boton.querySelector('img').src.includes('/icons/heart-fill.svg')) {
+                boton.querySelector('img').src = '/icons/heart.svg'
+                remove_LS(idMovie);
+                return
+            } else {
+                boton.querySelector('img').src = '/icons/heart-fill.svg'
+                modify_fav_LS(idMovie);
+            }
+
+        });
+    });
+
+    function modify_fav_LS(id) {
+        const movie_ids = get_LS()
+        for (let i = 0; i <= movie_ids.length; i++) {
+            /* si movie_ids[i] == id borrar en el local storage el elemento */
+            if (movie_ids[i] == id) {
+                remove_LS(id)
+                return
+            }
+            /* if (movie_ids[i] == id) return */
+        }
+        let movie = get_movie_by_id(id)
+        localStorage.setItem('movie-' + id, JSON.stringify(movie))
+    }
 
 
-function remove_LS (id) {
-    const movie_ids = get_LS()
-    localStorage.setItem('movie-id', JSON.stringify(movie_ids.filter(e => e !== id)))
-}
+    function remove_LS(id) {
+        const movie_ids = get_LS()
+        localStorage.setItem('movie-id', JSON.stringify(movie_ids.filter(e => e !== id)))
+    }
 
 
     //El lío de los favoritos
@@ -114,12 +126,12 @@ function remove_LS (id) {
     const heart_icon = corazon.querySelector('.heart-icon')
 
     const movie_ids = get_LS()
-    for(let i = 0; i <= movie_ids.length; i++) {
+    for (let i = 0; i <= movie_ids.length; i++) {
         if (movie_ids[i] == movie_id) heart_icon.classList.add('change-color')
     }
 
     heart_icon.addEventListener('click', () => {
-        if(heart_icon.classList.contains('change-color')) {
+        if (heart_icon.classList.contains('change-color')) {
             remove_LS(movie_id)
             heart_icon.classList.remove('change-color')
         } else {
@@ -130,7 +142,7 @@ function remove_LS (id) {
     })
 }
 
-async function get_movie_by_id (id) {
+async function get_movie_by_id(id) {
     const resp = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`)
     const respData = await resp.json()
     return respData
@@ -138,12 +150,12 @@ async function get_movie_by_id (id) {
 
 // Favorite Movies
 fetch_favorite_movies()
-async function fetch_favorite_movies () {
+async function fetch_favorite_movies() {
     main_grid.innerHTML = ''
 
     const movies_LS = await get_LS()
     const movies = []
-    for(let i = 0; i <= movies_LS.length - 1; i++) {
+    for (let i = 0; i <= movies_LS.length - 1; i++) {
         const movie_id = movies_LS[i]
         let movie = await get_movie_by_id(movie_id)
         add_favorites_to_dom_from_LS(movie)
@@ -151,7 +163,7 @@ async function fetch_favorite_movies () {
     }
 }
 
-function add_favorites_to_dom_from_LS (movie_data) {
+function add_favorites_to_dom_from_LS(movie_data) {
     main_grid.innerHTML += `
         <div class="card" data-id="${movie_data.id}">
             <div class="img">
