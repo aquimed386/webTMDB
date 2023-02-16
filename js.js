@@ -243,6 +243,10 @@ if (document.querySelector('.movies-container.favorites')) {
 
 // Poner las películas de dentro del local storage en la página de favoritos
 function add_favorites_to_dom_from_LS(movie_data) {
+    if (movie_data == null) {
+        return document.getElementById("fav-movies").innerHTML = "No hay favoritos añadidos."
+    }
+    const genero = generos.find(g => g.id === movie_data.genre_ids[0]).name
     return document.getElementById("fav-movies").innerHTML += `
     <div class="card" data-id="${movie_data.id}">
         <div class="img">
