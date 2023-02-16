@@ -20,17 +20,18 @@
 // Formatear todo el documento (usalo mucho): Alt + Shift + F
 
 
-const LANGUAGE = { "en": "Inglés", "es": "Español", "fr": "Francés" };
+const LANGUAGE = { "en": "Inglés", "es": "Español", "fr": "Francés", "de": "Alemán", "it": "Italiano", "ja": "Japonés", "pt": "Portugués", "ru": "Ruso", "zh": "Chino" };
 const API_KEY = `b4e59077eed37925947989634404ea03`
 const image_path = `https://image.tmdb.org/t/p/w500`
 const genero = `https://api.themoviedb.org/3/genre/movie/list?api_key=b4e59077eed37925947989634404ea03&language=en-US`
 
 const trending_el = document.querySelector('.trending .movies-grid')
 const main_grid = document.querySelector('.favorites .movies-grid')
+const search_grid = document.getElementById('searched-mov')
 
 get_trending_movies()
 async function get_trending_movies() {
-    const resp = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}&language=es-EN`)
+    const resp = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}&language=es-EN`)
     const respData = await resp.json()
     return respData.results
 }
@@ -212,6 +213,12 @@ if (document.querySelector('.movies-container.favorites')) {
     // Crea una función que llame a la API y devuelva los datos de la película
     async function fetch_favorite_movies() {
         const movie_ids = JSON.parse(localStorage.getItem('movie-id'))
+        // Si el array movie_ids viene vacío...
+        if (movie_ids.length === 0) {
+            // ...devuelve un mensaje de que no hay favoritos añadidos
+            return document.getElementById("fav-movies").innerHTML = "<div style='color: black;'>No hay favoritos añadidos.</div>"
+        }
+
         //llamar a la función get_movie_by_id(id) para cada id de la lista movie_ids
         movie_ids.forEach(id => {
             get_movie_by_id(id).then(movie => {
@@ -219,6 +226,10 @@ if (document.querySelector('.movies-container.favorites')) {
             })
         })
     }
+    // Espera a que el DOM haya terminado de cargarse para ejecutar fetch_favorite_movies()
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch_favorite_movies()
+    })
 }
 // -------------------- FIN DE "SE APLICA PASANDO EL ID DE LA PELÍCULA" ---------------------- //
 
@@ -243,10 +254,8 @@ if (document.querySelector('.movies-container.favorites')) {
 
 // Poner las películas de dentro del local storage en la página de favoritos
 function add_favorites_to_dom_from_LS(movie_data) {
-    if (movie_data == null) {
-        return document.getElementById("fav-movies").innerHTML = "No hay favoritos añadidos."
-    }
-    const genero = generos.find(g => g.id === movie_data.genre_ids[0]).name
+    // Guardar el name del primer objeto del objeto de genres que está dentro de movie_data
+    const genero = movie_data.genres[0].name
     return document.getElementById("fav-movies").innerHTML += `
     <div class="card" data-id="${movie_data.id}">
         <div class="img">
@@ -254,7 +263,7 @@ function add_favorites_to_dom_from_LS(movie_data) {
         </div>
         <div class="info">
             
-            <a class="add-fav" data-id_movie="${movie_data.id}" style="float: left;"><img src="icons/heart.svg" alt=""></a>
+            <!-- <a class="add-fav" data-id_movie="${movie_data.id}" style="float: left;"><img src="icons/heart.svg" alt=""></a> -->
             
 
             <h2>${movie_data.title ? movie_data.title : movie_data.name}</h2>
@@ -293,20 +302,24 @@ const input = document.querySelector('.search input')
 const btn = document.querySelector('.search button')
 
 
-async function get_movie_by_search (search_term) {
-    const resp = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${search_term}`)
+async function get_movie_by_search(search_term) {
+    const resp = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${search_term}&language=es-EN`)
     const respData = await resp.json()
     return respData.results
 }
 
-btn.addEventListener('click', add_searched_movies_to_dom)
+// Si existe el botón de buscar se queda atento al addEventListener
+if (btn) {
+    btn.addEventListener('click', add_searched_movies_to_dom)
+}
 
-async function add_searched_movies_to_dom () {
+async function add_searched_movies_to_dom() {
     const data = await get_movie_by_search(input.value)
     const generos = await get_genero()
 
-    main_grid.innerHTML = data.map(movie_data => {
-        const genero = generos.find(g => g.id === movie_data.genre_ids[0]).name
+    search_grid.innerHTML = data.map(movie_data => {
+        console.log(movie_data)
+        const genero = movie_data.genre_ids.length === 0 ? 'No hay género' : generos.find(genero => genero.id === movie_data.genre_ids[0]).name
         return `
         <div class="card" data-id="${movie_data.id}">
         <div class="img">
