@@ -286,3 +286,68 @@ function add_favorites_to_dom_from_LS(movie_data) {
     </div>
 `
 }
+
+//----------------------Buscador-----------------------------//
+
+const input = document.querySelector('.search input')
+const btn = document.querySelector('.search button')
+
+
+async function get_movie_by_search (search_term) {
+    const resp = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${search_term}`)
+    const respData = await resp.json()
+    return respData.results
+}
+
+btn.addEventListener('click', add_searched_movies_to_dom)
+
+async function add_searched_movies_to_dom () {
+    const data = await get_movie_by_search(input.value)
+    const generos = await get_genero()
+
+    main_grid.innerHTML = data.map(movie_data => {
+        const genero = generos.find(g => g.id === movie_data.genre_ids[0]).name
+        return `
+        <div class="card" data-id="${movie_data.id}">
+        <div class="img">
+            <img src="${image_path + movie_data.poster_path}">
+        </div>
+        <div class="info">
+            
+            <a class="add-fav" data-id_movie="${movie_data.id}" style="float: left;"><img src="icons/heart.svg" alt=""></a>
+            
+
+            <h2>${movie_data.title ? movie_data.title : movie_data.name}</h2>
+
+            <div class="single-info">
+                <span>Sinopsis: </span>
+                <span>${movie_data.overview}</span>
+            </div>
+            <div class="single-info">
+                <span>Géneros: </span>
+                <span>${genero}</span>
+            </div>
+
+            <div class="single-info">
+                <span>Lenguaje original: </span>
+                <span>${LANGUAGE[movie_data.original_language]}</span>
+            </div>
+
+            <div class="single-info">
+            <span>Fecha de estreno: </span>
+            <span>${movie_data.release_date ? movie_data.release_date : 'Por determinar'}</span>
+        </div>
+
+            <div class="single-info">
+                <span>Puntuación: </span>
+                <span>${movie_data.vote_average}</span>
+            </div>
+        </div>
+    </div>
+        `
+    }).join('')
+
+    const cards = document.querySelectorAll('.card')
+    add_click_effect_to_card(cards)
+}
+
